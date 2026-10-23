@@ -9,9 +9,17 @@ namespace CollegeApp.Controllers
         [HttpGet("All")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IEnumerable<Student> GetStudents()
+        public ActionResult<IEnumerable<StudentDTO>> GetStudents()
         {
-            return CollegeRepository.Students;
+            var students = CollegeRepository.Students.Select(s => new StudentDTO
+            {
+                Id = s.Id,
+                Name = s.Name,
+                Email = s.Email,
+                Address = s.Address
+            }).ToList();
+            
+            return Ok(students);
         }
 
         [HttpGet("{id}:int")]
@@ -19,7 +27,7 @@ namespace CollegeApp.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<Student> GetStudentById(int id)
+        public ActionResult<StudentDTO> GetStudentById(int id)
         {
             if(id <= 0)
             {
@@ -30,7 +38,14 @@ namespace CollegeApp.Controllers
             {
                 return NotFound($"Student with {id} not found");
             }
-            return Ok(student);
+            var studentDTO = new StudentDTO
+            {
+                Id = student.Id,
+                Name = student.Name,
+                Email = student.Email,
+                Address = student.Address
+            };
+            return Ok(studentDTO);
         }
         [HttpGet]
         [Route("{name}:alpha")]
@@ -38,14 +53,21 @@ namespace CollegeApp.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<Student> GetStudentByName(string name)
-        {
+        public ActionResult<StudentDTO> GetStudentByName(string name)
+            {
             var student = CollegeRepository.Students.Where(n => n.Name == name).FirstOrDefault();
             if (student == null)
             {
                 return NotFound($"Student with name {name} not found");
             }
-            return Ok(student);
+            var studentDTO = new StudentDTO
+            {
+                Id = student.Id,
+                Name = student.Name,
+                Email = student.Email,
+                Address = student.Address
+            };
+            return Ok(studentDTO);
         }
         [HttpDelete("{id}:int")]
         [ProducesResponseType(StatusCodes.Status200OK)]
