@@ -71,8 +71,11 @@ namespace CollegeApp.Controllers
         }
 
         [HttpPost("Create")]
-        public ActionResult<StudentDTO> CreateStudent([FromBody] Student model)
+        public ActionResult<StudentDTO> CreateStudent([FromBody] StudentDTO model)
         {
+            //Manual validation
+            //if (!ModelState.IsValid)
+            //    return BadRequest(ModelState);
             if (model == null)
             {
                 return BadRequest("Student data is null");
