@@ -22,7 +22,7 @@ namespace CollegeApp.Controllers
             return Ok(students);
         }
 
-        [HttpGet("{id}:int")]
+        [HttpGet("{id}:int", Name = "GetStudentById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -87,7 +87,7 @@ namespace CollegeApp.Controllers
             };
             CollegeRepository.Students.Add(student);
             model.Id = student.Id;
-            return Ok(student);
+            return CreatedAtRoute("GetStudentById", new { id = student.Id }, model);
         }
 
         [HttpDelete("{id}:int")]
