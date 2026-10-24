@@ -71,6 +71,9 @@ namespace CollegeApp.Controllers
         }
 
         [HttpPost("Create")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<StudentDTO> CreateStudent([FromBody] StudentDTO model)
         {
             //Manual validation
@@ -91,6 +94,63 @@ namespace CollegeApp.Controllers
             CollegeRepository.Students.Add(student);
             model.Id = student.Id;
             return CreatedAtRoute("GetStudentById", new { id = student.Id }, model);
+        }
+
+        [HttpPut("{id:int}")]
+        public ActionResult<StudentDTO> UpdateStudent([FromBody] StudentDTO model)
+        {
+            if (model == null)
+            {
+                return BadRequest("Student data is null");
+            }
+            var existingstudent = CollegeRepository.Students.Where(s => s.Id == model.Id).FirstOrDefault();
+            if (existingstudent == null)
+            {
+                return NotFound($"Student with ID {model.Id} not found");
+            }
+            if (string.IsNullOrEmpty(model.Name) || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Address))
+            {
+                return BadRequest("Student data is incomplete");
+            }
+            existingstudent.Name = model.Name;
+            existingstudent.Email = model.Email;
+            existingstudent.Address = model.Address;
+            return Ok(model);
+        }
+
+        [HttpPatch]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<StudentDTO> UpdateStudentPartial([FromBody] StudentDTO model)
+        {
+            if(model == null)
+            {
+                return BadRequest("Student data is null");
+            }
+            if (model.Id <= 0)
+            {
+                return BadRequest("Invalid student ID was entered");
+            }
+            var existingstudent = CollegeRepository.Students.Where(s => s.Id == model.Id).FirstOrDefault();
+            if (existingstudent == null)
+            {
+                return NotFound($"Student with ID {model.Id} not found");
+            }
+            if(!string.IsNullOrEmpty(model.Name))
+            {
+                existingstudent.Name = model.Name;
+            }
+            if(!string.IsNullOrEmpty(model.Email))
+            {
+                existingstudent.Email = model.Email;
+            }
+            if(!string.IsNullOrEmpty(model.Address))
+            {
+                existingstudent.Address = model.Address;
+            }
+            return Ok(model);
         }
 
         [HttpDelete("{id}:int")]
