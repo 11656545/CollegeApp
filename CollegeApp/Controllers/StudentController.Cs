@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using CollegeApp.Models;
+using Microsoft.AspNetCore.JsonPatch;
+
 namespace CollegeApp.Controllers
 {
     [Route("api/[controller]")]
@@ -119,38 +121,41 @@ namespace CollegeApp.Controllers
         }
 
         [HttpPatch]
+        [Route("{id:int}/UpdatePartial")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<StudentDTO> UpdateStudentPartial([FromBody] StudentDTO model)
+        public ActionResult UpdateStudentPartial(int id, [FromBody] JsonPatchDocument<StudentDTO> patchmodel)
         {
-            if(model == null)
+            if(patchmodel == null)
             {
                 return BadRequest("Student data is null");
             }
-            if (model.Id <= 0)
+            if (id <= 0)
             {
                 return BadRequest("Invalid student ID was entered");
             }
-            var existingstudent = CollegeRepository.Students.Where(s => s.Id == model.Id).FirstOrDefault();
-            if (existingstudent == null)
+            var existingstudent = CollegeRepository.Students.Where(s => s.Id == id).FirstOrDefault();
+            var studentDTO = new StudentDTO
             {
-                return NotFound($"Student with ID {model.Id} not found");
-            }
-            if(!string.IsNullOrEmpty(model.Name))
+                Id = existingstudent.Id,
+                Name = existingstudent.Name,
+                Email = existingstudent.Email,
+                Address = existingstudent.Address
+            };
+
+            patchmodel.ApplyTo(studentDTO);
+
+            if(string.IsNullOrEmpty(studentDTO.Name) || string.IsNullOrEmpty(studentDTO.Email) || string.IsNullOrEmpty(studentDTO.Address))
             {
-                existingstudent.Name = model.Name;
+                return BadRequest("Student data is incomplete");
             }
-            if(!string.IsNullOrEmpty(model.Email))
-            {
-                existingstudent.Email = model.Email;
-            }
-            if(!string.IsNullOrEmpty(model.Address))
-            {
-                existingstudent.Address = model.Address;
-            }
-            return Ok(model);
+            existingstudent.Name = studentDTO.Name;
+            existingstudent.Email = studentDTO.Email;
+            existingstudent.Address = studentDTO.Address;
+
+            return NoContent();
         }
 
         [HttpDelete("{id}:int")]
