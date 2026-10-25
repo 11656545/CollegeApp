@@ -9,14 +9,11 @@ namespace CollegeApp.Controllers
     {
         private readonly IMyLogger _mylogger;
 
-        public Demo()
+        //Loosely coupled mechanism/ Dependency Injection (DI) is used here to inject the logger dependency into the controller.
+        //Whenever we need an object for different class we will get it object from program.cs file and inject it into the controller class. This is called dependency injection.
+        public Demo(IMyLogger myLogger)
         {
-            //Strongly coupled mechanism, we are creating the object of LogToDB class here, so if we want to change the logging mechanism, we have to change the code here.
-            _mylogger = new LogToDB();
-            //If I want to change the logging mechanism to LogToFile, I have to change the code here as below commented, which is not a good practice.
-            // _mylogger = new LogToFile();
-            //_mylogger = new LogToServerMemory();
-            //_mylogger = new LogToConsole();
+            _mylogger = myLogger;
         }
 
         [HttpGet]
