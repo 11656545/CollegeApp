@@ -31,23 +31,43 @@ namespace CollegeApp.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<DateOnly>("DOB")
                         .HasColumnType("date");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Students");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Address = "Hyd, IND",
+                            DOB = new DateOnly(2000, 1, 1),
+                            Email = "vamsi@example.com",
+                            Name = "Vamsi"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Address = "Vja, IND",
+                            DOB = new DateOnly(1999, 5, 15),
+                            Email = "ramesh@example.com",
+                            Name = "Ramesh"
+                        });
                 });
 #pragma warning restore 612, 618
         }
