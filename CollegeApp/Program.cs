@@ -1,4 +1,6 @@
+using CollegeApp.Data;
 using CollegeApp.MyLogging;
+using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,6 +10,11 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 //builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<CollegeDBContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 //This line will create an object for the class(LogToFile, LogToDB,LogToServermemory etc)when someone calls IMylogger 
 builder.Services.AddScoped<IMyLogger, LogToFile>();
