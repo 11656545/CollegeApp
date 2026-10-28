@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CollegeApp.Data;
 using CollegeApp.Models;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CollegeApp.Controllers
 {
@@ -8,17 +9,23 @@ namespace CollegeApp.Controllers
     [ApiController]
     public class StudentController : ControllerBase
     {
+        private readonly CollegeDBContext _dBContext;
+        public StudentController(CollegeDBContext dBContext)
+        {
+            _dBContext = dBContext;
+        }
         [HttpGet("All")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<IEnumerable<StudentDTO>> GetStudents()
         {
-            var students = CollegeRepository.Students.Select(s => new StudentDTO
+            var students = _dBContext.Students.Select(s => new StudentDTO
             {
                 Id = s.Id,
                 Name = s.Name,
                 Email = s.Email,
-                Address = s.Address
+                Address = s.Address,
+                DOB = s.DOB
             }).ToList();
 
             return Ok(students);
@@ -35,7 +42,7 @@ namespace CollegeApp.Controllers
             {
                 return BadRequest("Invalid student ID was entered");
             }
-            var student = CollegeRepository.Students.Where(n => n.Id == id).FirstOrDefault();
+            var student = _dBContext.Students.Where(n => n.Id == id).FirstOrDefault();
             if (student == null)
             {
                 return NotFound($"Student with {id} not found");
@@ -45,7 +52,8 @@ namespace CollegeApp.Controllers
                 Id = student.Id,
                 Name = student.Name,
                 Email = student.Email,
-                Address = student.Address
+                Address = student.Address,
+                DOB = student.DOB
             };
             return Ok(studentDTO);
         }
@@ -57,7 +65,7 @@ namespace CollegeApp.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<StudentDTO> GetStudentByName(string name)
         {
-            var student = CollegeRepository.Students.Where(n => n.Name == name).FirstOrDefault();
+            var student = _dBContext.Students.Where(n => n.Name == name).FirstOrDefault();
             if (student == null)
             {
                 return NotFound($"Student with name {name} not found");
@@ -67,7 +75,8 @@ namespace CollegeApp.Controllers
                 Id = student.Id,
                 Name = student.Name,
                 Email = student.Email,
-                Address = student.Address
+                Address = student.Address,
+                DOB = student.DOB
             };
             return Ok(studentDTO);
         }
@@ -85,16 +94,16 @@ namespace CollegeApp.Controllers
             {
                 return BadRequest("Student data is null");
             }
-            int newId = CollegeRepository.Students.Max(s => s.Id) + 1;
+            int newId = _dBContext.Students.Max(s => s.Id) + 1;
             Student student = new Student
             {
-                Id = newId,
                 Name = model.Name,
                 Email = model.Email,
-                Address = model.Address
+                Address = model.Address,
+                DOB = model.DOB
             };
-            CollegeRepository.Students.Add(student);
-            model.Id = student.Id;
+            _dBContext.Students.Add(student);
+            _dBContext.SaveChanges();
             return CreatedAtRoute("GetStudentById", new { id = student.Id }, model);
         }
 
@@ -105,7 +114,7 @@ namespace CollegeApp.Controllers
             {
                 return BadRequest("Student data is null");
             }
-            var existingstudent = CollegeRepository.Students.Where(s => s.Id == model.Id).FirstOrDefault();
+            var existingstudent = _dBContext.Students.Where(s => s.Id == model.Id).FirstOrDefault();
             if (existingstudent == null)
             {
                 return NotFound($"Student with ID {model.Id} not found");
@@ -117,6 +126,8 @@ namespace CollegeApp.Controllers
             existingstudent.Name = model.Name;
             existingstudent.Email = model.Email;
             existingstudent.Address = model.Address;
+            existingstudent.DOB = model.DOB;
+            _dBContext.SaveChanges();
             return Ok(model);
         }
 
@@ -136,13 +147,14 @@ namespace CollegeApp.Controllers
             {
                 return BadRequest("Invalid student ID was entered");
             }
-            var existingstudent = CollegeRepository.Students.Where(s => s.Id == id).FirstOrDefault();
+            var existingstudent = _dBContext.Students.Where(s => s.Id == id).FirstOrDefault();
             var studentDTO = new StudentDTO
             {
                 Id = existingstudent.Id,
                 Name = existingstudent.Name,
                 Email = existingstudent.Email,
-                Address = existingstudent.Address
+                Address = existingstudent.Address,
+                DOB = existingstudent.DOB
             };
 
             patchmodel.ApplyTo(studentDTO);
@@ -154,6 +166,8 @@ namespace CollegeApp.Controllers
             existingstudent.Name = studentDTO.Name;
             existingstudent.Email = studentDTO.Email;
             existingstudent.Address = studentDTO.Address;
+            existingstudent.DOB = studentDTO.DOB;
+            _dBContext.SaveChanges();
 
             return NoContent();
         }
@@ -169,12 +183,13 @@ namespace CollegeApp.Controllers
             {
                 return BadRequest("Invalid student ID was entered");
             }
-            var student = CollegeRepository.Students.Where(n => n.Id == id).FirstOrDefault();
+            var student = _dBContext.Students.Where(n => n.Id == id).FirstOrDefault();
             if (student == null)
             {
                 return NotFound($"Student with {id} not found");
             }
-            CollegeRepository.Students.Remove(student);
+            _dBContext.Students.Remove(student);
+            _dBContext.SaveChanges();
             return Ok(true);
         }
         
